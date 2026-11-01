@@ -54,6 +54,10 @@ Key conventions:
 Curated agent skills (from [mattpocock/skills](https://github.com/mattpocock/skills))
 live in `.agents/skills/` — discovered automatically by OpenCode and other agents.
 
+**New machine or fresh clone? Run the `doctor` skill first** — it verifies the
+skills, Python, dependencies, data layout, and git remote, then reports
+pass/fail with fixes.
+
 Workflow for changes: **grill-with-docs** (align) → **to-spec** → **to-tickets** →
 **implement** (drives **tdd**) → **code-review**. Use **diagnosing-bugs** for
 defects, **improve-codebase-architecture** for design surveys, **handoff** to
