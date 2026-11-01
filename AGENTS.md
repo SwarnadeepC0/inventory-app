@@ -49,6 +49,16 @@ Key conventions:
 2. Do not replace the Excel storage with a database without being asked.
 3. Keep the app single-file unless a change genuinely requires a module split.
 
+## Skills
+
+Curated agent skills (from [mattpocock/skills](https://github.com/mattpocock/skills))
+live in `.agents/skills/` — discovered automatically by OpenCode and other agents.
+
+Workflow for changes: **grill-with-docs** (align) → **to-spec** → **to-tickets** →
+**implement** (drives **tdd**) → **code-review**. Use **diagnosing-bugs** for
+defects, **improve-codebase-architecture** for design surveys, **handoff** to
+transfer work between agents, and **ask-matt** if unsure which skill fits.
+
 ## Testing
 
 No test suite exists yet. Verify changes manually: start the dev server and
