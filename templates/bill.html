@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice — {{ order.order_id }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', Times, serif; padding: 20px; max-width: 800px; margin: auto; color: #333; font-size: 11px; }
+
+    .invoice { border: 1px solid #e0e0e0; padding: 30px 35px; background: #fff; }
+
+    /* --- Header: logo left, company info right --- */
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .header-logo img { max-width: 180px; max-height: 180px; }
+    .header-company { text-align: right; }
+    .header-company .company-name { font-size: 12px; font-weight: bold; color: #333; }
+    .header-company p { font-size: 10.5px; color: #333; line-height: 1.5; margin-top: 2px; }
+    .header-company .gstin { font-size: 10.5px; color: #333; margin-top: 2px; }
+
+    /* --- TAX INVOICE title --- */
+    .invoice-title { font-size: 14px; color: #000; text-align: center; padding: 8px 0; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0; margin-bottom: 12px; letter-spacing: 1px; }
+
+    /* --- Bill To + Invoice Meta side by side --- */
+    .meta-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .meta-row .bill-to { width: 50%; }
+    .meta-row .invoice-meta { width: 45%; }
+
+    .bill-to .label { font-size: 10.5px; color: #000; margin-bottom: 4px; }
+    .bill-to .customer-name { font-size: 12px; font-weight: bold; color: #333; }
+    .bill-to p { font-size: 10.5px; color: #333; line-height: 1.5; }
+    .place-of-supply { font-size: 10.5px; color: #333; margin-top: 8px; }
+
+    .invoice-meta table { width: 100%; border-collapse: collapse; }
+    .invoice-meta td { padding: 3px 6px; font-size: 10.5px; vertical-align: top; }
+    .invoice-meta td:first-child { font-weight: bold; color: #000; white-space: nowrap; }
+    .invoice-meta td:last-child { color: #333; }
+
+    /* --- Items Table --- */
+    .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .items-table th {
+      background: #f5f5f5;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      padding: 7px 8px;
+      font-size: 10.5px;
+      font-weight: bold;
+      color: #333;
+      text-align: left;
+    }
+    .items-table td {
+      padding: 7px 8px;
+      font-size: 10.5px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    .items-table .text-right { text-align: right; }
+    .items-table .text-center { text-align: center; }
+
+    /* --- Totals --- */
+    .totals-section { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .thanks { font-size: 10.5px; color: #333; padding-top: 4px; }
+    .totals-table { min-width: 280px; }
+    .totals-table table { width: 100%; border-collapse: collapse; }
+    .totals-table td { padding: 4px 8px; font-size: 10.5px; color: #333; }
+    .totals-table td:first-child { text-align: right; }
+    .totals-table td:last-child { text-align: right; min-width: 90px; }
+    .totals-table .total-row td { font-weight: bold; color: #000; border-top: 1px solid #ccc; font-size: 11px; }
+    .totals-table .balance-row td { font-weight: bold; color: #000; font-size: 12px; border-top: 1px solid #333; padding-top: 6px; }
+
+    /* --- Total in words --- */
+    .total-words { display: flex; gap: 8px; padding: 8px 0; border-top: 1px solid #eee; margin-bottom: 10px; font-size: 10.5px; }
+    .total-words .label { color: #333; white-space: nowrap; }
+    .total-words .value { font-weight: bold; font-style: italic; color: #333; }
+
+    /* --- Payment & Signature row --- */
+    .footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+    .payment-info { font-size: 10.5px; color: #333; line-height: 1.6; }
+    .signature-block { text-align: center; }
+    .signature-block img { max-width: 180px; height: auto; margin-bottom: 4px; }
+    .signature-block .sig-label { font-size: 11px; color: #000; }
+
+    /* --- Print --- */
+    .print-btn { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: #333; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; font-family: Arial, sans-serif; }
+    .print-btn:hover { background: #111; }
+    @media print {
+      .print-btn { display: none; }
+      body { padding: 0; }
+      .invoice { border: none; padding: 20px; }
+    }
+    @media (max-width: 600px) {
+      .header { flex-direction: column; align-items: center; text-align: center; }
+      .header-company { text-align: center; margin-top: 10px; }
+      .meta-row { flex-direction: column; }
+      .meta-row .bill-to, .meta-row .invoice-meta { width: 100%; margin-bottom: 10px; }
+      .totals-section { flex-direction: column; }
+      .totals-table { width: 100%; }
+      .footer-row { flex-direction: column; gap: 15px; }
+      .invoice { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+
+  <div class="invoice">
+
+    <!-- Header: Logo + Company Info -->
+    <div class="header">
+      <div class="header-logo">
+        <img src="/static/logo.jpeg" alt="Company Logo">
+      </div>
+      <div class="header-company">
+        <div class="company-name">Sneha Fashion Creation</div>
+        <p>Flat-1D, 1st Floor,<br>
+           48, Sreenagar Main Road, LP-207/40<br>
+           Kolkata West Bengal 700094<br>
+           India</p>
+        <div class="gstin">GSTIN 19CAYPM4813M1ZS</div>
+      </div>
+    </div>
+
+    <!-- TAX INVOICE Title -->
+    <div class="invoice-title">TAX INVOICE</div>
+
+    <!-- Bill To + Invoice Meta -->
+    <div class="meta-row">
+      <div class="bill-to">
+        <div class="label">Bill To</div>
+        <div class="customer-name">{{ order.customer_name }}</div>
+        <p>{{ order.address }}</p>
+      </div>
+      <div class="invoice-meta">
+        <table>
+          <tr><td>Invoice#</td><td>{{ order.order_id }}</td></tr>
+          <tr><td>Invoice Date</td><td>{{ order.date }}</td></tr>
+          <tr><td>Terms</td><td>Due on Receipt</td></tr>
+          <tr><td>Due Date</td><td>{{ order.date }}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Item</th>
+          <th>Code</th>
+          <th class="text-right">Qty</th>
+          <th class="text-right">Rate</th>
+          <th class="text-right">IGST</th>
+          <th class="text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order['items'] %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ item.item_name }}</td>
+          <td>{{ item.item_code }}</td>
+          <td class="text-right">{{ item.quantity }}.00</td>
+          <td class="text-right">{{ "%.2f"|format(item.unit_price) }}</td>
+          <td class="text-right">{{ "%.2f"|format(item.amount * igst_rate / 100) }}<br><span style="font-size:9px">{{ igst_rate }}%</span></td>
+          <td class="text-right">{{ "%.2f"|format(item.amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div class="totals-section">
+      <div class="thanks">Thanks for your business.</div>
+      <div class="totals-table">
+        <table>
+          <tr><td>Sub Total</td><td>{{ "%.2f"|format(subtotal) }}</td></tr>
+          <tr><td>IGST{{ igst_rate }} ({{ igst_rate }}%)</td><td>{{ "%.2f"|format(igst_amount) }}</td></tr>
+          <tr class="total-row"><td>Total</td><td>{{ "%.2f"|format(total) }}</td></tr>
+          {% if payment_made > 0 %}
+          <tr><td>Payment Made</td><td>(-) {{ "%.2f"|format(payment_made) }}</td></tr>
+          {% endif %}
+          <tr class="balance-row"><td>Balance Due</td><td>{{ "%.2f"|format(balance_due) }}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Total in Words -->
+    <div class="total-words">
+      <span class="label">Total In Words:</span>
+      <span class="value">{{ total_in_words }}</span>
+    </div>
+
+    {% if order.notes %}
+    <p style="font-size: 10.5px; color: #333; margin-bottom: 10px;"><strong>Notes:</strong> {{ order.notes }}</p>
+    {% endif %}
+
+    <!-- Payment Info + Signature -->
+    <div class="footer-row">
+      <div class="payment-info">
+        Please make payment in-<br>
+        A/C-50100177134521<br>
+        A/C Name- Diptashree Mondal<br>
+        IFSC code - HDFC0000462<br>
+        Bank- HDFC BANK<br><br>
+        Payment via Gpay-<br>
+        7400480501<br>
+        Or<br>
+        diptashree.mondal@okhdfcbank
+      </div>
+      <div class="signature-block">
+        <img src="/static/signature.jpeg" alt="Signature">
+        <div class="sig-label">Authorized Signature</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
