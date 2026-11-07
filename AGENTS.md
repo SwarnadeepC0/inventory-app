@@ -70,6 +70,13 @@ exercise the index page, the `/api/*` endpoints, and bill rendering.
 
 ## Deployment
 
-Deployed manually to PythonAnywhere. Code changes sync via git push to this
-repo, then pull on the server and reload the web app from the PythonAnywhere
-dashboard.
+Push-to-deploy via GitHub Actions (`.github/workflows/deploy.yml`): every push
+to `main` uploads `app.py`, `requirements.txt`, `templates/`, and `static/` to
+`/home/swarnadeep/inventory-app` over the PythonAnywhere Files API, then
+reloads `swarnadeep.pythonanywhere.com`. The `PA_API_TOKEN` is stored in
+GitHub Actions secrets.
+
+- `data/` is NEVER deployed — live customer data exists only on the server.
+- If `requirements.txt` changes, packages must still be installed manually in
+  a PythonAnywhere console (`pip install -r inventory-app/requirements.txt`),
+  then reload.

@@ -1,0 +1,44 @@
+name: Deploy to PythonAnywhere
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload app code to PythonAnywhere
+        env:
+          PA_API_TOKEN: ${{ secrets.PA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          API="https://www.pythonanywhere.com/api/v0/user/swarnadeep/files/path/home/swarnadeep/inventory-app"
+
+          upload() {
+            echo "↑ $1"
+            curl -sf -X POST \
+              -H "Authorization: Token $PA_API_TOKEN" \
+              -F "content=@$1" \
+              "$API/$1"
+          }
+
+          # App code ONLY. Never deploy data/ (live customer data lives on the
+          # server and is gitignored), .agents/, .github/, docs, or venvs.
+          upload app.py
+          upload requirements.txt
+          find templates static -type f -print0 | while IFS= read -r -d '' f; do
+            upload "$f"
+          done
+
+      - name: Reload web app
+        env:
+          PA_API_TOKEN: ${{ secrets.PA_API_TOKEN }}
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Token $PA_API_TOKEN" \
+            "https://www.pythonanywhere.com/api/v0/user/swarnadeep/webapps/swarnadeep.pythonanywhere.com/reload/"
+          echo "✅ Reloaded https://swarnadeep.pythonanywhere.com"
